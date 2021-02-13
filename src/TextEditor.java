@@ -1,16 +1,13 @@
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
-import java.awt.Component;
+import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -25,6 +22,13 @@ public final class TextEditor extends JFrame implements ActionListener {
 	private static JTextArea area;
 	private static JFrame frame;
 	private static int returnValue = 0;
+	private Document editorPaneDocument;
+	private UndoHandler undoHandler = new UndoHandler();
+	protected UndoManager undoManager = new UndoManager();
+	private UndoAction undoAction = null;
+	private RedoAction redoAction = null;
+
+
 
 	public TextEditor() { run(); }
 
@@ -39,12 +43,28 @@ public final class TextEditor extends JFrame implements ActionListener {
       		Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
     	}
 
+
+
         // Set attributes of the app window
 		area = new JTextArea();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.add(area);
 		frame.setSize(640, 480);
         frame.setVisible(true);
+
+		editorPaneDocument = area.getDocument();
+		editorPaneDocument.addUndoableEditListener(undoHandler);
+
+		KeyStroke undoKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_MASK);
+		KeyStroke redoKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.META_MASK);
+
+		undoAction = new UndoAction();
+		area.getInputMap().put(undoKeystroke, "undoKeystroke");
+		area.getActionMap().put("undoKeystroke", undoAction);
+
+		redoAction = new RedoAction();
+		area.getInputMap().put(redoKeystroke, "redoKeystroke");
+		area.getActionMap().put("redoKeystroke", redoAction);
 
         // Build the menu
 		JMenuBar menu_main = new JMenuBar();
@@ -67,6 +87,16 @@ public final class TextEditor extends JFrame implements ActionListener {
 		menu_file.add(menuitem_open);
 		menu_file.add(menuitem_save);
 		menu_file.add(menuitem_quit);
+
+		JMenu undoMenu = new JMenu("Edit");
+		JMenuItem undoMenuItem = new JMenuItem(undoAction);
+		JMenuItem redoMenuItem = new JMenuItem(redoAction);
+		undoMenu.add(undoMenuItem);
+		undoMenu.add(redoMenuItem);
+
+		menu_main.add(undoMenu);
+
+
 
         frame.setJMenuBar(menu_main);
     }
