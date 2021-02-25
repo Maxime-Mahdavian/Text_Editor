@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
@@ -22,12 +24,8 @@ public final class TextEditor extends JFrame implements ActionListener {
 	private static JTextArea area;
 	private static JFrame frame;
 	private static int returnValue = 0;
-	private Document editorPaneDocument;
-	private UndoHandler undoHandler = new UndoHandler();
-	protected UndoManager undoManager = new UndoManager();
-	private UndoAction undoAction = null;
-	private RedoAction redoAction = null;
-
+	UndoManager um;
+	edit_function edit = new edit_function(this);
 
 
 	public TextEditor() { run(); }
@@ -51,20 +49,13 @@ public final class TextEditor extends JFrame implements ActionListener {
 		frame.add(area);
 		frame.setSize(640, 480);
         frame.setVisible(true);
+		area.getDocument().addUndoableEditListener(
+				new UndoableEditListener(){
+					public void undoableEditHappened(UndoableEditEvent e){
+						um.addEdit(e.getEdit());
+					}
+				});
 
-		editorPaneDocument = area.getDocument();
-		editorPaneDocument.addUndoableEditListener(undoHandler);
-
-		KeyStroke undoKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_MASK);
-		KeyStroke redoKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.META_MASK);
-
-		undoAction = new UndoAction();
-		area.getInputMap().put(undoKeystroke, "undoKeystroke");
-		area.getActionMap().put("undoKeystroke", undoAction);
-
-		redoAction = new RedoAction();
-		area.getInputMap().put(redoKeystroke, "redoKeystroke");
-		area.getActionMap().put("redoKeystroke", redoAction);
 
         // Build the menu
 		JMenuBar menu_main = new JMenuBar();
@@ -89,14 +80,25 @@ public final class TextEditor extends JFrame implements ActionListener {
 		menu_file.add(menuitem_quit);
 
 		JMenu undoMenu = new JMenu("Edit");
-		JMenuItem undoMenuItem = new JMenuItem(undoAction);
-		JMenuItem redoMenuItem = new JMenuItem(redoAction);
+		JMenuItem undoMenuItem = new JMenuItem("Undo");
+		JMenuItem redoMenuItem = new JMenuItem("Redo");
+		undoMenuItem.addActionListener(this);
+		redoMenuItem.addActionListener(this);
+		undoMenuItem.setActionCommand("Undo");
+		redoMenuItem.setActionCommand("Redo");
 		undoMenu.add(undoMenuItem);
 		undoMenu.add(redoMenuItem);
 
+		KeyStroke keyStrokeToUndo = KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+		undoMenuItem.setAccelerator(keyStrokeToUndo);
+
+		KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK);
+		redoMenuItem.setAccelerator(keyStrokeToRedo);
+
+
 		menu_main.add(undoMenu);
 
-
+		um = new UndoManager();
 
         frame.setJMenuBar(menu_main);
     }
@@ -122,7 +124,7 @@ public final class TextEditor extends JFrame implements ActionListener {
 				area.setText(ingest);
 				}
 		catch ( FileNotFoundException ex) { ex.printStackTrace(); }
-	}
+			}
 		// SAVE
 		} else if (ae.equals("Save")) {
 			returnValue = jfc.showSaveDialog(null);
@@ -141,6 +143,13 @@ public final class TextEditor extends JFrame implements ActionListener {
 		} else if (ae.equals("New")) {
 			area.setText("");
 		} else if (ae.equals("Quit")) { System.exit(0); }
+
+		else if(ae.equals("Undo")){
+			edit.undo();
+		}
+		else if(ae.equals("Redo")){
+			edit.redo();
+		}
 	}
 }
 
