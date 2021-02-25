@@ -23,6 +23,7 @@ public final class TextEditor extends JFrame implements ActionListener {
 
 	private static JTextArea area;
 	private static JFrame frame;
+	private static JScrollPane scrollPane;
 	private static int returnValue = 0;
 	UndoManager um;
 	edit_function edit = new edit_function(this);
@@ -45,8 +46,10 @@ public final class TextEditor extends JFrame implements ActionListener {
 
         // Set attributes of the app window
 		area = new JTextArea();
+		scrollPane = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(area);
+		frame.add(scrollPane);
 		frame.setSize(640, 480);
         frame.setVisible(true);
 		area.getDocument().addUndoableEditListener(
@@ -79,6 +82,7 @@ public final class TextEditor extends JFrame implements ActionListener {
 		menu_file.add(menuitem_save);
 		menu_file.add(menuitem_quit);
 
+		//Undo and redo menu item
 		JMenu undoMenu = new JMenu("Edit");
 		JMenuItem undoMenuItem = new JMenuItem("Undo");
 		JMenuItem redoMenuItem = new JMenuItem("Redo");
@@ -88,17 +92,18 @@ public final class TextEditor extends JFrame implements ActionListener {
 		redoMenuItem.setActionCommand("Redo");
 		undoMenu.add(undoMenuItem);
 		undoMenu.add(redoMenuItem);
+		menu_main.add(undoMenu);
 
+		//For the keyboard shortcut
 		KeyStroke keyStrokeToUndo = KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
 		undoMenuItem.setAccelerator(keyStrokeToUndo);
 
 		KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK);
 		redoMenuItem.setAccelerator(keyStrokeToRedo);
 
-
-		menu_main.add(undoMenu);
-
 		um = new UndoManager();
+
+
 
         frame.setJMenuBar(menu_main);
     }
