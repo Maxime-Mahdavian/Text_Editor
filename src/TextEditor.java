@@ -42,24 +42,6 @@ public final class TextEditor extends JFrame implements ActionListener {
       		Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
     	}
 
-
-
-        // Set attributes of the app window
-		area = new JTextArea();
-		scrollPane = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(scrollPane);
-		frame.setSize(640, 480);
-        frame.setVisible(true);
-		area.getDocument().addUndoableEditListener(
-				new UndoableEditListener(){
-					public void undoableEditHappened(UndoableEditEvent e){
-						um.addEdit(e.getEdit());
-					}
-				});
-
-
         // Build the menu
 		JMenuBar menu_main = new JMenuBar();
 
@@ -86,12 +68,16 @@ public final class TextEditor extends JFrame implements ActionListener {
 		JMenu undoMenu = new JMenu("Edit");
 		JMenuItem undoMenuItem = new JMenuItem("Undo");
 		JMenuItem redoMenuItem = new JMenuItem("Redo");
+		JMenuItem listUndo = new JMenuItem("List Undo");
 		undoMenuItem.addActionListener(this);
 		redoMenuItem.addActionListener(this);
+		listUndo.addActionListener(this);
 		undoMenuItem.setActionCommand("Undo");
 		redoMenuItem.setActionCommand("Redo");
+		listUndo.setActionCommand("List Undo");
 		undoMenu.add(undoMenuItem);
 		undoMenu.add(redoMenuItem);
+		undoMenu.add(listUndo);
 		menu_main.add(undoMenu);
 
 		//For the keyboard shortcut
@@ -101,8 +87,25 @@ public final class TextEditor extends JFrame implements ActionListener {
 		KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK);
 		redoMenuItem.setAccelerator(keyStrokeToRedo);
 
+		KeyStroke quit = KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK);
+		menuitem_quit.setAccelerator(quit);
+
 		um = new UndoManager();
 
+		// Set attributes of the app window
+		area = new JTextArea();
+		scrollPane = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(scrollPane);
+		frame.setSize(800, 600);
+		frame.setVisible(true);
+		area.getDocument().addUndoableEditListener(
+				new UndoableEditListener(){
+					public void undoableEditHappened(UndoableEditEvent e){
+						um.addEdit(e.getEdit());
+					}
+				});
 
 
         frame.setJMenuBar(menu_main);
@@ -154,6 +157,10 @@ public final class TextEditor extends JFrame implements ActionListener {
 		}
 		else if(ae.equals("Redo")){
 			edit.redo();
+		}
+		else if(ae.equals("List Undo")){
+			System.out.println(edit.showEdit());
+			System.out.println(um.getLimit());
 		}
 	}
 }

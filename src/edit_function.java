@@ -1,3 +1,6 @@
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+
 public class edit_function {
 
     TextEditor textEditor;
@@ -9,11 +12,24 @@ public class edit_function {
 
     public void undo(){
 
-        textEditor.um.undo();
+        try {
+            textEditor.um.undo();
+        } catch(CannotUndoException e){
+
+        }
     }
 
     public void redo(){
+        try {
+            textEditor.um.redo();
+        } catch (CannotRedoException e){
 
-        textEditor.um.redo();
+        }
     }
+
+    public String showEdit(){
+        return textEditor.um.toString();
+    }
+
+
 }
