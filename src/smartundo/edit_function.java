@@ -4,6 +4,8 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import java.util.Stack;
 
+//TODO: put a limit on the undoStack
+
 public class edit_function{
 
     TextEditor textEditor;
@@ -16,6 +18,8 @@ public class edit_function{
         this.textEditor = editor;
         undoStack = new Stack<>();
         redoStack = new Stack<>();
+        undoStack.setSize(10);
+        redoStack.setSize(10);
     }
 
     public void undo(){
@@ -34,10 +38,11 @@ public class edit_function{
             if(undoStack.size() == 0)
                 return;
 
-            long startTime = undoStack.peek().getTime();
+            Edits startEdit = undoStack.peek();
             String undo_class = undoStack.peek().getEdit().getUndoPresentationName();
 
-            while(undoStack.size() > 0 && startTime - undoStack.peek().getTime() <= 2000 &&
+            //TODO: Stop nullpointerexception when stack is empty on compareTime
+            while(undoStack.size() > 0 && startEdit.compareTime(undoStack.peek()) <= 2000 &&
                     undoStack.peek().getEdit().getUndoPresentationName().equals(undo_class)){
                 Edits edit = undoStack.pop();
                 redoStack.push(edit);
@@ -70,6 +75,11 @@ public class edit_function{
 
     public void addEdit(Edits edit){
         undoStack.push(edit);
+    }
+
+    public void emptyStacks(){
+        undoStack.clear();
+        redoStack.clear();
     }
 
 

@@ -144,6 +144,7 @@ public final class TextEditor extends JFrame implements ActionListener {
 
         String ae = e.getActionCommand();
         if (ae.equals("Open")) {
+            edit.emptyStacks();
             returnValue = jfc.showOpenDialog(null);
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 File f = new File(jfc.getSelectedFile().getAbsolutePath());

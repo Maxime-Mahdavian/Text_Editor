@@ -32,7 +32,11 @@ public class Edits {
     }
 
     public long compareTime(Edits other){
-        return other.time - this.time;
+        return this.time - other.time;
+    }
+
+    public String toString(){
+        return "Edit: " + this.edit.getPresentationName() + "\nTime: " + this.time + "\nGroup: " + this.group;
     }
 
 
