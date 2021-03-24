@@ -4,22 +4,18 @@ import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileSystemView;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
-import javax.swing.undo.UndoableEdit;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +30,12 @@ public final class TextEditor extends JFrame implements ActionListener {
     edit_function edit = new edit_function(this);
     long group_counter = 1;
     String previousClass = "";
+    private final static ArrayList<String> non_supported_file_extensions = new ArrayList<>(
+            Arrays.asList(".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", ".png", ".gif", ".webp",
+                    ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", "k25", ".bmp", ".dib", ".heif",
+                    ".heic", ".ind", ".indd", ".indt", ".jp2", ".j2k", ".jpf", ".jpx", ".jpm", ".mj2", ".svg",
+                    ".svgz", ".ai", ".eps", ".pdf"));
+    //feel free to add whatever you want, no clue how far you want to go with this
 
 
     public TextEditor() { run(); }
@@ -144,12 +146,12 @@ public final class TextEditor extends JFrame implements ActionListener {
 
         String ae = e.getActionCommand();
         if (ae.equals("Open")) {
-            edit.emptyStacks();
             returnValue = jfc.showOpenDialog(null);
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 File f = new File(jfc.getSelectedFile().getAbsolutePath());
 
-                if(f.getName().contains(".jpg") || f.getName().contains(".png")) {
+                String filename = f.getName().substring(f.getName().indexOf('.'));
+                if(non_supported_file_extensions.contains(filename)) {
                     JOptionPane.showMessageDialog(null, "Error, cannot open image");
                 }
                 else {
@@ -164,6 +166,7 @@ public final class TextEditor extends JFrame implements ActionListener {
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
+                    edit.emptyStacks();
                 }
             }
             // SAVE
