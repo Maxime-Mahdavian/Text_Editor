@@ -18,8 +18,8 @@ public class edit_function{
         this.textEditor = editor;
         undoStack = new Stack<>();
         redoStack = new Stack<>();
-        undoStack.setSize(10);
-        redoStack.setSize(10);
+        undoStack.setSize(100);
+        redoStack.setSize(100);
     }
 
     public void undo(){
@@ -41,7 +41,6 @@ public class edit_function{
             Edits startEdit = undoStack.peek();
             String undo_class = undoStack.peek().getEdit().getUndoPresentationName();
 
-            //TODO: Stop nullpointerexception when stack is empty on compareTime
             while(undoStack.size() > 0 && startEdit.compareTime(undoStack.peek()) <= 2000 &&
                     undoStack.peek().getEdit().getUndoPresentationName().equals(undo_class)){
                 Edits edit = undoStack.pop();
@@ -50,7 +49,7 @@ public class edit_function{
                 edit.getEdit().undo();
                 //System.out.println(editsStack.peek().getTime() - startTime);
             }
-        } catch(CannotUndoException e){
+        } catch(CannotUndoException | NullPointerException e){
 
         }
     }
