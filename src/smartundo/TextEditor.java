@@ -9,11 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -41,8 +37,6 @@ public final class TextEditor extends JFrame implements ActionListener {
     public TextEditor() { run(); }
 
     public void run() {
-
-
 
         frame = new JFrame("Text Edit");
 
@@ -104,11 +98,35 @@ public final class TextEditor extends JFrame implements ActionListener {
 
         //um = new UndoManager();
 
+        JMenu font_size = new JMenu("Font Size");
+        JMenuItem font8 = new JMenuItem("8");
+        JMenuItem font10 = new JMenuItem("10");
+        JMenuItem font12 = new JMenuItem("12");
+        JMenuItem font14 = new JMenuItem("14");
+        JMenuItem font16 = new JMenuItem("16");
+        JMenuItem font20 = new JMenuItem("20");
+
+        font8.addActionListener(this);
+        font10.addActionListener(this);
+        font12.addActionListener(this);
+        font14.addActionListener(this);
+        font16.addActionListener(this);
+        font20.addActionListener(this);
+
+        font_size.add(font8);
+        font_size.add(font10);
+        font_size.add(font12);
+        font_size.add(font14);
+        font_size.add(font16);
+        font_size.add(font20);
+
+        undoMenu.add(font_size);
 
 
         // Set attributes of the app window
         area = new JTextArea();
         area.setLineWrap(true);
+        area.setWrapStyleWord(true);
         scrollPane = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -194,5 +212,29 @@ public final class TextEditor extends JFrame implements ActionListener {
         else if(ae.equals("Redo")){
             edit.redo();
         }
+        else if(ae.equals("8")){
+            setFont(8);
+        }
+        else if(ae.equals("10")){
+            setFont(10);
+        }
+        else if(ae.equals("12")){
+            setFont(12);
+        }
+        else if(ae.equals("14")){
+            setFont(14);
+        }
+        else if(ae.equals("16")){
+            setFont(16);
+        }
+        else if(ae.equals("20")){
+            setFont(20);
+        }
     }
+
+    public void setFont(int size){
+        area.setFont(new Font("Arial", Font.PLAIN, size));
+    }
+
+
 }

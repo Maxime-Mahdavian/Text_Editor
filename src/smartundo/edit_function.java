@@ -4,7 +4,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import java.util.Stack;
 
-//TODO: put a limit on the undoStack
 
 public class edit_function{
 
