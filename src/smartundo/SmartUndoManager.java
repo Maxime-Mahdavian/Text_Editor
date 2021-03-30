@@ -1,24 +1,31 @@
 package smartundo;
 
+import javax.swing.*;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import java.util.LinkedList;
 import java.util.Stack;
 
 
-public class edit_function{
+public class SmartUndoManager {
 
     TextEditor textEditor;
     Stack<Edits> undoStack;
     Stack<Edits> redoStack;
+    LinkedList<Long> group_list;
+    long group_counter = 1;
+    String previousClass = "";
 
 
-    public edit_function(TextEditor editor){
+    public SmartUndoManager(TextEditor editor){
 
         this.textEditor = editor;
         undoStack = new Stack<>();
         redoStack = new Stack<>();
         undoStack.setSize(100);
         redoStack.setSize(100);
+        group_list = new LinkedList<>();
+
     }
 
     public void undo(){
@@ -67,12 +74,56 @@ public class edit_function{
         }
     }
 
+    public void undoGroup(String group){
+
+        long group_number = Long.parseLong(group);
+        boolean hasFoundGroup = false;
+
+        System.out.println(undoStack.toString());
+        /*try{
+            while(undoStack.size() > 0){
+                Edits edit = undoStack.peek();
+
+                if(edit.getGroup() == group_number){
+                    hasFoundGroup = true;
+                    edit.getEdit().undo();
+                    undoStack.pop();
+                    redoStack.push(edit);
+                }
+                else if(edit.getGroup() != group_number && !hasFoundGroup){
+                    edit.getEdit().undo();
+                    undoStack.pop();
+                    redoStack.push(edit);
+                }
+                else if(edit.getGroup() != group_number && hasFoundGroup){
+                    break;
+                }
+            }
+
+        } catch(CannotUndoException e){
+            System.out.println("Error in group undo.");
+        }*/
+    }
+
     public String showEdit(){
         return textEditor.um.toString();
     }
 
-    public void addEdit(Edits edit){
+    public void addEdit(Edits edit) {
+
+        edit.setGroup(group_counter);
         undoStack.push(edit);
+
+        if (!edit.getEdit().getPresentationName().equals(previousClass)) {
+            String temp = previousClass;
+            previousClass = edit.getEdit().getPresentationName();
+            textEditor.addGroupMenu(edit, group_counter);
+            //Important, since we don't want to change the group number when it's the first edit done in the document
+            if (!temp.equals(""))
+                group_counter++;
+
+            System.out.println(this.group_counter);
+        }
     }
 
     public void emptyStacks(){

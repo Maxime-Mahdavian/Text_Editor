@@ -8,10 +8,9 @@ public class Edits {
     private final long time;
     private long group;
 
-    public Edits(UndoableEdit edit, long time, long group){
+    public Edits(UndoableEdit edit, long time){
         this.edit = edit;
         this.time = time;
-        this.group = group;
     }
 
 

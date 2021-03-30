@@ -10,9 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,10 +20,10 @@ public final class TextEditor extends JFrame implements ActionListener {
     private static JFrame frame;
     private static JScrollPane scrollPane;
     private static int returnValue = 0;
+    JMenu menu_groups;
     UndoManager um;
-    edit_function edit = new edit_function(this);
-    long group_counter = 1;
-    String previousClass = "";
+    SmartUndoManager edit = new SmartUndoManager(this);
+    LinkedList<JMenuItem> undoMenuItems;
     private final static ArrayList<String> non_supported_file_extensions = new ArrayList<>(
             Arrays.asList(".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", ".png", ".gif", ".webp",
                     ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", "k25", ".bmp", ".dib", ".heif",
@@ -34,7 +32,7 @@ public final class TextEditor extends JFrame implements ActionListener {
     //feel free to add whatever you want, no clue how far you want to go with this
 
 
-    public TextEditor() { run(); }
+    public TextEditor() { undoMenuItems = new LinkedList<>(); run(); }
 
     public void run() {
 
@@ -82,7 +80,7 @@ public final class TextEditor extends JFrame implements ActionListener {
         undoMenu.add(redoMenuItem);
         menu_main.add(undoMenu);
 
-        JMenu menu_groups = new JMenu("Group of Edit...");
+        menu_groups = new JMenu("Group of Edit...");
 
         undoMenu.add(menu_groups);
 
@@ -112,6 +110,13 @@ public final class TextEditor extends JFrame implements ActionListener {
         font14.addActionListener(this);
         font16.addActionListener(this);
         font20.addActionListener(this);
+        font8.setActionCommand("Font8");
+        font10.setActionCommand("Font10");
+        font12.setActionCommand("Font12");
+        font14.setActionCommand("Font14");
+        font16.setActionCommand("Font16");
+        font20.setActionCommand("Font20");
+
 
         font_size.add(font8);
         font_size.add(font10);
@@ -136,19 +141,10 @@ public final class TextEditor extends JFrame implements ActionListener {
         area.getDocument().addUndoableEditListener(
                 new UndoableEditListener(){
                     public void undoableEditHappened(UndoableEditEvent e){
-
-                        if(!e.getEdit().getPresentationName().equals(previousClass)){
-                            previousClass = e.getEdit().getPresentationName();
-                            JMenuItem edit = new JMenuItem(e.getEdit().getPresentationName());
-                            menu_groups.add(edit);
-                            group_counter++;
-                        }
-
                         //um.addEdit(e.getEdit());
-                        Edits new_edit = new Edits(e.getEdit(), System.currentTimeMillis(), group_counter);
+                        Edits new_edit = new Edits(e.getEdit(), System.currentTimeMillis());
                         edit.addEdit(new_edit);
                         edit.redoStack.clear();
-
                     }
                 });
 
@@ -212,25 +208,53 @@ public final class TextEditor extends JFrame implements ActionListener {
         else if(ae.equals("Redo")){
             edit.redo();
         }
-        else if(ae.equals("8")){
+        else if(ae.equals("Font8")){
             setFont(8);
         }
-        else if(ae.equals("10")){
+        else if(ae.equals("Font10")){
             setFont(10);
         }
-        else if(ae.equals("12")){
+        else if(ae.equals("Font12")){
             setFont(12);
         }
-        else if(ae.equals("14")){
+        else if(ae.equals("Font14")){
             setFont(14);
         }
-        else if(ae.equals("16")){
+        else if(ae.equals("Font16")){
             setFont(16);
         }
-        else if(ae.equals("20")){
+        else if(ae.equals("Font20")){
             setFont(20);
         }
+        else if(isNumeric(ae)){
+            //System.out.println(edit.undoStack.toString());
+            edit.undoGroup(ae);
+        }
     }
+
+    public ActionListener getActionListener(){
+        return this;
+    }
+
+    public boolean isNumeric(String str){
+
+        try{
+            Long.parseLong(str);
+            return true;
+        }
+        catch(NumberFormatException e){
+            return false;
+        }
+    }
+
+    public void addGroupMenu(Edits edit, long group_counter){
+        JMenuItem newedit = new JMenuItem(edit.getEdit().getPresentationName());
+        menu_groups.add(newedit);
+        newedit.addActionListener(getActionListener());
+        newedit.setActionCommand(Long.toString(group_counter));
+        undoMenuItems.add(newedit);
+    }
+
 
     public void setFont(int size){
         area.setFont(new Font("Arial", Font.PLAIN, size));
