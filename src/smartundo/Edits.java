@@ -11,6 +11,7 @@ public class Edits {
     public Edits(UndoableEdit edit, long time){
         this.edit = edit;
         this.time = time;
+        this.group = 0;
     }
 
 

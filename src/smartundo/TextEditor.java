@@ -148,6 +148,10 @@ public final class TextEditor extends JFrame implements ActionListener {
                     }
                 });
 
+        JMenuItem test = new JMenuItem("test");
+        test.addActionListener(this);
+        test.setActionCommand("test");
+        undoMenu.add(test);
 
         frame.setJMenuBar(menu_main);
     }
@@ -180,7 +184,7 @@ public final class TextEditor extends JFrame implements ActionListener {
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
-                    edit.emptyStacks();
+                    edit.reset();
                 }
             }
             // SAVE
@@ -200,6 +204,7 @@ public final class TextEditor extends JFrame implements ActionListener {
             }
         } else if (ae.equals("New")) {
             area.setText("");
+            edit.reset();
         } else if (ae.equals("Quit")) { System.exit(0); }
 
         else if(ae.equals("Undo")){
@@ -230,6 +235,9 @@ public final class TextEditor extends JFrame implements ActionListener {
             //System.out.println(edit.undoStack.toString());
             edit.undoGroup(ae);
         }
+        else if(ae.equals("test")){
+            System.out.println(edit.undoStack.toString());
+        }
     }
 
     public ActionListener getActionListener(){
@@ -253,6 +261,36 @@ public final class TextEditor extends JFrame implements ActionListener {
         newedit.addActionListener(getActionListener());
         newedit.setActionCommand(Long.toString(group_counter));
         undoMenuItems.add(newedit);
+    }
+
+    public void removeFirstGroupMenuItem(){
+        //Turns out you can just do that to remove the first element in the list of menus
+        try {
+            menu_groups.remove(0);
+        }
+        catch (IllegalArgumentException e){
+
+        }
+        //System.out.println(edit.active_group_list.toString());
+
+
+    }
+
+    public void removeLastGroupMenuItem(){
+        try {
+            menu_groups.remove(menu_groups.getItemCount() - 1);
+        }
+        catch(IllegalArgumentException e){
+
+        }
+    }
+
+    public void removeGroupMenuItem(int number){
+
+    }
+
+    public void removeAllGroupMenuItem(){
+        menu_groups.removeAll();
     }
 
 
