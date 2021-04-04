@@ -21,7 +21,6 @@ public final class TextEditor extends JFrame implements ActionListener {
     private static JScrollPane scrollPane;
     private static int returnValue = 0;
     JMenu menu_groups;
-    UndoManager um;
     SmartUndoManager edit = new SmartUndoManager(this);
     LinkedList<JMenuItem> undoMenuItems;
     private final static ArrayList<String> non_supported_file_extensions = new ArrayList<>(
@@ -94,7 +93,6 @@ public final class TextEditor extends JFrame implements ActionListener {
         KeyStroke quit = KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK);
         menuitem_quit.setAccelerator(quit);
 
-        //um = new UndoManager();
 
         JMenu font_size = new JMenu("Font Size");
         JMenuItem font8 = new JMenuItem("8");
@@ -125,7 +123,7 @@ public final class TextEditor extends JFrame implements ActionListener {
         font_size.add(font16);
         font_size.add(font20);
 
-        undoMenu.add(font_size);
+        menu_main.add(font_size);
 
 
         // Set attributes of the app window
@@ -147,11 +145,6 @@ public final class TextEditor extends JFrame implements ActionListener {
                         edit.redoStack.clear();
                     }
                 });
-
-        JMenuItem test = new JMenuItem("test");
-        test.addActionListener(this);
-        test.setActionCommand("test");
-        undoMenu.add(test);
 
         frame.setJMenuBar(menu_main);
     }
@@ -235,8 +228,9 @@ public final class TextEditor extends JFrame implements ActionListener {
             //System.out.println(edit.undoStack.toString());
             edit.undoGroup(ae);
         }
-        else if(ae.equals("test")){
-            System.out.println(edit.undoStack.toString());
+        else if(ae.startsWith("Delete")){
+            String group = ae.substring(6);
+            edit.deleteUndoGroup(group);
         }
     }
 
@@ -256,12 +250,19 @@ public final class TextEditor extends JFrame implements ActionListener {
     }
 
     public void addGroupMenu(Edits edit, long group_counter){
-        JMenuItem newedit = new JMenuItem(edit.getEdit().getPresentationName());
+        JMenu newedit = new JMenu(edit.getEdit().getPresentationName() + group_counter);
+        JMenuItem newedit_undo = new JMenuItem("Undo");
+        JMenuItem newedit_delete = new JMenuItem("Delete");
+        newedit.add(newedit_undo);
+        newedit.add(newedit_delete);
         menu_groups.add(newedit);
-        newedit.addActionListener(getActionListener());
-        newedit.setActionCommand(Long.toString(group_counter));
+        newedit_undo.addActionListener(getActionListener());
+        newedit_undo.setActionCommand(Long.toString(group_counter));
+        newedit_delete.addActionListener(getActionListener());
+        newedit_delete.setActionCommand("Delete" + Long.toString(group_counter));
         undoMenuItems.add(newedit);
     }
+
 
     public void removeFirstGroupMenuItem(){
         //Turns out you can just do that to remove the first element in the list of menus
@@ -271,9 +272,6 @@ public final class TextEditor extends JFrame implements ActionListener {
         catch (IllegalArgumentException e){
 
         }
-        //System.out.println(edit.active_group_list.toString());
-
-
     }
 
     public void removeLastGroupMenuItem(){
@@ -283,10 +281,6 @@ public final class TextEditor extends JFrame implements ActionListener {
         catch(IllegalArgumentException e){
 
         }
-    }
-
-    public void removeGroupMenuItem(int number){
-
     }
 
     public void removeAllGroupMenuItem(){
