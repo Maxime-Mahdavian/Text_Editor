@@ -250,7 +250,7 @@ public final class TextEditor extends JFrame implements ActionListener {
     }
 
     public void addGroupMenu(Edits edit, long group_counter){
-        JMenu newedit = new JMenu(edit.getEdit().getPresentationName() + group_counter);
+        JMenu newedit = new JMenu(edit.getEdit().getPresentationName());
         JMenuItem newedit_undo = new JMenuItem("Undo");
         JMenuItem newedit_delete = new JMenuItem("Delete");
         newedit.add(newedit_undo);
