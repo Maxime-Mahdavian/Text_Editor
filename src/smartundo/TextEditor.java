@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileSystemView;
-import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +22,12 @@ public final class TextEditor extends JFrame implements ActionListener {
     JMenu menu_groups;
     SmartUndoManager edit = new SmartUndoManager(this);
     LinkedList<JMenuItem> undoMenuItems;
+    JFrame undoWindow;
+    JPanel name_panel;
+    JPanel delete_panel;
+    JPanel undo_panel;
+    JPanel content_panel;
+
     private final static ArrayList<String> non_supported_file_extensions = new ArrayList<>(
             Arrays.asList(".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", ".png", ".gif", ".webp",
                     ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", "k25", ".bmp", ".dib", ".heif",
@@ -31,7 +36,30 @@ public final class TextEditor extends JFrame implements ActionListener {
     //feel free to add whatever you want, no clue how far you want to go with this
 
 
-    public TextEditor() { undoMenuItems = new LinkedList<>(); run(); }
+    public TextEditor() {
+        undoMenuItems = new LinkedList<>();
+        undoWindow = new JFrame("Undo Menu");
+        undoWindow.setVisible(false);
+        name_panel = new JPanel();
+        name_panel.setVisible(false);
+        delete_panel = new JPanel();
+        delete_panel.setVisible(false);
+        undo_panel = new JPanel();
+        undo_panel.setVisible(false);
+        content_panel = new JPanel();
+        content_panel.setVisible(false);
+        undoWindow.setResizable(false);
+
+        content_panel.setLayout(new GridLayout(0,3,5,5));
+        content_panel.add(name_panel);
+        content_panel.add(undo_panel);
+        content_panel.add(delete_panel);
+        undoWindow.add(content_panel);
+
+
+        undoWindow.setSize(350, 500);
+        run();
+    }
 
     public void run() {
 
@@ -124,6 +152,11 @@ public final class TextEditor extends JFrame implements ActionListener {
         font_size.add(font20);
 
         menu_main.add(font_size);
+
+        JMenuItem test = new JMenuItem("Test");
+        test.addActionListener(this);
+        test.setActionCommand("test");
+        menu_main.add(test);
 
 
         // Set attributes of the app window
@@ -231,6 +264,17 @@ public final class TextEditor extends JFrame implements ActionListener {
         else if(ae.startsWith("Delete")){
             String group = ae.substring(6);
             edit.deleteUndoGroup(group);
+
+        }
+        else if(ae.equals("test")){
+
+            undoWindow.setVisible(true);
+
+            //panel = new JPanel();
+            content_panel.setVisible(true);
+            name_panel.setVisible(true);
+            undo_panel.setVisible(true);
+            delete_panel.setVisible(true);
         }
     }
 
@@ -250,7 +294,7 @@ public final class TextEditor extends JFrame implements ActionListener {
     }
 
     public void addGroupMenu(Edits edit, long group_counter){
-        JMenu newedit = new JMenu(edit.getEdit().getPresentationName());
+        JMenu newedit = new JMenu(edit.getEdit().getPresentationName() + group_counter);
         JMenuItem newedit_undo = new JMenuItem("Undo");
         JMenuItem newedit_delete = new JMenuItem("Delete");
         newedit.add(newedit_undo);
@@ -292,5 +336,52 @@ public final class TextEditor extends JFrame implements ActionListener {
         area.setFont(new Font("Arial", Font.PLAIN, size));
     }
 
+    public void addGroupElements(Edits edit, long group){
 
+        JButton label = new JButton(edit.getEdit().getPresentationName() + group);
+        JButton undo_button = new JButton("Undo Group");
+        JButton delete_button = new JButton("Delete Group");
+        label.setSize(100,20);
+        label.setEnabled(false);
+        undo_button.setSize(100,20);
+        delete_button.setSize(100, 20);
+        name_panel.add(label);
+        undo_panel.add(undo_button);
+        delete_panel.add(delete_button);
+        undo_button.addActionListener(getActionListener());
+        delete_button.addActionListener(getActionListener());
+        undo_button.setActionCommand(Long.toString(group));
+        delete_button.setActionCommand("Delete" + Long.toString(group));
+    }
+
+    public void removeAllGroupElements(){
+        name_panel.setVisible(false);
+        name_panel.removeAll();
+        name_panel.invalidate();
+        name_panel.revalidate();
+        name_panel.setVisible(true);
+        undo_panel.setVisible(false);
+        undo_panel.removeAll();
+        undo_panel.invalidate();
+        undo_panel.revalidate();
+        undo_panel.setVisible(true);
+        delete_panel.setVisible(false);
+        delete_panel.removeAll();
+        delete_panel.invalidate();
+        delete_panel.revalidate();
+        delete_panel.setVisible(true);
+        System.out.println("Something");
+    }
+
+    public void removeFirstGroupElement(){
+        name_panel.remove(0);
+        name_panel.invalidate();
+        name_panel.revalidate();
+        undo_panel.remove(0);
+        undo_panel.invalidate();
+        undo_panel.revalidate();
+        delete_panel.remove(0);
+        delete_panel.invalidate();
+        delete_panel.revalidate();
+    }
 }

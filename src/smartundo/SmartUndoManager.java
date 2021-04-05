@@ -27,6 +27,7 @@ public class SmartUndoManager {
         time_of_previous_group = 0;
 
     }
+
     //Undo function, this is what happens when you hit ctrl-z
     public void undo(){
 
@@ -48,6 +49,7 @@ public class SmartUndoManager {
             }
 
             updateGroupList();
+            updateGroupWindow();
 
         } catch(CannotUndoException | NullPointerException e){
 
@@ -67,6 +69,7 @@ public class SmartUndoManager {
         }
 
         updateGroupList();
+        updateGroupWindow();
     }
 
     //undo every edit from a group
@@ -99,12 +102,16 @@ public class SmartUndoManager {
 
                 if(edit.getGroup() != previous_group_number){
                     textEditor.removeLastGroupMenuItem();
+                    updateGroupWindow();
                     previous_group_number = edit.getGroup();
                 }
             }
 
-            if(undoStack.size() == 0)
+            if(undoStack.size() == 0){
                 textEditor.removeLastGroupMenuItem();
+                textEditor.removeAllGroupElements();
+            }
+
 
         } catch(CannotUndoException | NullPointerException e){
             System.out.println("Error in group undo.");
@@ -118,7 +125,8 @@ public class SmartUndoManager {
 
         undoStack.removeIf(edit -> edit.getGroup() == group_number);
         updateGroupList();
-        System.out.println(undoStack.toString());
+        updateGroupWindow();
+        //System.out.println(undoStack.toString());
     }
 
     //Add the edit to the undostack
@@ -129,9 +137,10 @@ public class SmartUndoManager {
         }
 
         //5 is a temp value for testing.
-        if(active_group_count > MAX_ACTIVE_GROUPS){
+        if(active_group_count == MAX_ACTIVE_GROUPS-1){
             active_group_count--;
             textEditor.removeFirstGroupMenuItem();
+            textEditor.removeFirstGroupElement();
         }
 
         //This is where the group stuff happens, it seems to be working now
@@ -145,6 +154,7 @@ public class SmartUndoManager {
                 active_group_count++;
             }
             textEditor.addGroupMenu(edit, group_counter);
+            textEditor.addGroupElements(edit, group_counter);
             firstEdit = false;
         }
 
@@ -172,10 +182,26 @@ public class SmartUndoManager {
         long previous_group = 0;
 
         for (Edits edit : undoStack) {
-            if (edit.getGroup() != previous_group) {
+            if (edit.getGroup() != previous_group && active_group_count <= MAX_ACTIVE_GROUPS) {
                 previous_group = edit.getGroup();
                 active_group_count++;
                 textEditor.addGroupMenu(edit, edit.getGroup());
+            }
+        }
+    }
+
+    public void updateGroupWindow(){
+
+        textEditor.removeAllGroupElements();
+        active_group_count = 0;
+        long previous_group = 0;
+
+
+        for(Edits edit: undoStack){
+            if(edit.getGroup() != previous_group && active_group_count <= MAX_ACTIVE_GROUPS){
+                previous_group = edit.getGroup();
+                active_group_count++;
+                textEditor.addGroupElements(edit, edit.getGroup());
             }
         }
     }
