@@ -2,9 +2,6 @@ package smartundo;
 
 import java.util.Stack;
 
-//I discovered that the built-in java stack doesn't have a upper limit, so i created this
-//to give it one, it acts exactly like a normal stack
-
 /**
  * @param <T> Object that is stored in the stack.
  *
