@@ -62,6 +62,7 @@ public class SmartUndoManager {
 
             //After undoing them, we want to check if any group was not removed
             updateGroupWindow();
+            updateEditWindow();
 
         } catch(CannotUndoException | NullPointerException e){
             //Silently ignore exceptions, since it is pretty clear when there is nothing to be undone
@@ -84,6 +85,7 @@ public class SmartUndoManager {
 
         //After redoing, we need to check if any groups was not added back
         updateGroupWindow();
+        updateEditWindow();
     }
 
     /**
@@ -122,6 +124,7 @@ public class SmartUndoManager {
                 else if(edit.getGroup() != group_number && hasFoundGroup){
                     //textEditor.removeLastGroupMenuItem();
                     updateGroupWindow();
+                    updateEditWindow();
                     break;
                 }
                 //If we have found a new, previously unseen group, then we need to update the previous group number
@@ -129,11 +132,12 @@ public class SmartUndoManager {
                 if(edit.getGroup() != previous_group_number){
                     //textEditor.removeLastGroupMenuItem();
                     updateGroupWindow();
+                    updateEditWindow();
                     previous_group_number = edit.getGroup();
                 }
             }
 
-            //This removes one-off errors to encounter when undoing every group
+            //This removes one-off errors encountered when undoing every group
             if(undoStack.size() == 0){
                 //textEditor.removeLastGroupMenuItem();
                 textEditor.removeAllGroupElements();
@@ -148,7 +152,7 @@ public class SmartUndoManager {
     /**
      * @param group Group number to delete
      *
-     * Delete every edit from a group from the stack, essentially making it undoable
+     * Delete every edit from a group from the stack, essentially making it not undoable
      */
     public void deleteUndoGroup(String group){
 
@@ -158,6 +162,62 @@ public class SmartUndoManager {
         undoStack.removeIf(edit -> edit.getGroup() == group_number);
         //updateGroupList();
         updateGroupWindow();
+        updateEditWindow();
+    }
+
+    /**
+     * @param time Time of the edit, used to identify the edit to undo
+     *
+     *  Undo an edit from the window. Its behaviour is identical of undoGroup
+     */
+    public void undoEdit(String time){
+
+        long time_of_edit = Long.parseLong(time);
+
+        try{
+            while(undoStack.size() > 0) {
+                Edits edit = undoStack.peek();
+
+                //If we have found the right time, then we have found the right edit to edit
+                if (edit.getTime() == time_of_edit) {
+                    edit.getEdit().undo();
+                    undoStack.pop();
+                    redoStack.push(edit);
+                    break;
+
+                //If the time is not the same, then it is not the edit we are looking for
+                } else if (edit.getTime() != time_of_edit) {
+                    edit.getEdit().undo();
+                    undoStack.pop();
+                    redoStack.push(edit);
+                }
+
+                //This removes one-off errors encountered when undoing every edit
+                if (undoStack.size() == 0) {
+                    textEditor.removeAllGroupElements();
+                    textEditor.removeAllEditElements();
+                }
+            }
+        } catch(CannotUndoException | NullPointerException e){
+            //Silently ignore undo mistakes
+        }
+        updateGroupWindow();
+        updateEditWindow();
+
+    }
+
+    /**
+     * @param time The time of the desired edit, used to identify it
+     *
+     *  It deletes the edit from the undo stack, its behaviour is identical to its group counterpart.
+     */
+    public void deleteEdit(String time){
+
+        long time_of_edit = Long.parseLong(time);
+
+        undoStack.removeIf(edit -> edit.getTime() == time_of_edit);
+        updateGroupWindow();
+        updateEditWindow();
     }
 
     /**
@@ -177,7 +237,7 @@ public class SmartUndoManager {
         //To keep the UndoWindow manageable, we only allow a certain number of groups in the window
         if(active_group_count == MAX_ACTIVE_GROUPS-1){
             active_group_count--;
-            textEditor.removeFirstGroupMenuItem();
+            //textEditor.removeFirstGroupMenuItem();
             textEditor.removeFirstGroupElement();
         }
 
@@ -202,16 +262,17 @@ public class SmartUndoManager {
         //Set the group number of that edit, then push is to the undo stack
         edit.setGroup(group_counter);
         undoStack.push(edit);
+        updateEditWindow();
     }
 
     /**
      * Used when opening a new file, to clear any information from the previous file
      */
-    //We need to reset everything, not only the two stacks. Happens when opening a new file or a new file
     public void reset(){
         undoStack.clear();
         redoStack.clear();
         updateGroupWindow();
+        updateEditWindow();
         group_counter = 1;
         active_group_count = 0;
         previousClass = "";
@@ -252,6 +313,17 @@ public class SmartUndoManager {
                 active_group_count++;
                 textEditor.addGroupElements(edit, edit.getGroup());
             }
+        }
+    }
+
+    public void updateEditWindow(){
+        textEditor.removeAllEditElements();
+        //active_group_count = 0;
+        // long previous_group = 0;
+
+
+        for(Edits edit: undoStack){
+            textEditor.addEditElements(edit, edit.getTime());
         }
     }
 }

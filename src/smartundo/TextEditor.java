@@ -25,13 +25,17 @@ public final class TextEditor extends JFrame implements ActionListener {
     private static JScrollPane scrollPane;
     private static int returnValue = 0;
     protected JMenu menu_groups;
-    protected SmartUndoManager edit = new SmartUndoManager(this);
+    protected SmartUndoManager smartUndoManager = new SmartUndoManager(this);
     protected LinkedList<JMenuItem> undoMenuItems;
-    protected JFrame undoWindow;
-    protected JPanel name_panel;
-    protected JPanel delete_panel;
-    protected JPanel undo_panel;
-    protected JPanel content_panel;
+    protected JFrame undoGroupWindow;
+    protected JPanel group_name_panel;
+    protected JPanel group_delete_panel;
+    protected JPanel group_undo_panel;
+    protected JPanel group_content_panel;
+
+    protected JFrame undoEditWindow;
+    protected JPanel undoEditWindowPanel;
+    protected JScrollPane undoEditWindowScrollPane;
 
     //List of non supported file extensions that will raise an error if encoutered
     private final static ArrayList<String> non_supported_file_extensions = new ArrayList<>(
@@ -44,33 +48,50 @@ public final class TextEditor extends JFrame implements ActionListener {
     /**
      * Constructor
      *
-     * Sets up basic configuration for windows, both the main and the undoGroup window
+     * Sets up basic configuration for windows, both the main, the undoGroup window and the undoEdit Window.
      */
     public TextEditor() {
         undoMenuItems = new LinkedList<>();
-        undoWindow = new JFrame("Undo Menu");
-        undoWindow.setLocationRelativeTo(frame);
-        undoWindow.setVisible(false);
-        name_panel = new JPanel();
-        name_panel.setVisible(false);
-        delete_panel = new JPanel();
-        delete_panel.setVisible(false);
-        undo_panel = new JPanel();
-        undo_panel.setVisible(false);
-        content_panel = new JPanel();
-        content_panel.setVisible(false);
-        undoWindow.setResizable(false);
+        undoGroupWindow = new JFrame("Undo Menu");
+        undoGroupWindow.setLocationRelativeTo(frame);
+        undoGroupWindow.setVisible(false);
+        group_name_panel = new JPanel();
+        group_name_panel.setVisible(false);
+        group_delete_panel = new JPanel();
+        group_delete_panel.setVisible(false);
+        group_undo_panel = new JPanel();
+        group_undo_panel.setVisible(false);
+        group_content_panel = new JPanel();
+        group_content_panel.setVisible(false);
+        undoGroupWindow.setResizable(false);
 
         //To keep everything organized, the undoWindow is divided into three columns, one for each element
         //in the window (label, undo, delete). The three components are then added to the main panel.
-        content_panel.setLayout(new GridLayout(0,3,5,5));
-        content_panel.add(name_panel);
-        content_panel.add(undo_panel);
-        content_panel.add(delete_panel);
-        undoWindow.add(content_panel);
+        group_content_panel.setLayout(new GridLayout(0,3,5,5));
+        group_content_panel.add(group_name_panel);
+        group_content_panel.add(group_undo_panel);
+        group_content_panel.add(group_delete_panel);
+        undoGroupWindow.add(group_content_panel);
+        undoGroupWindow.setSize(350, 500);
 
 
-        undoWindow.setSize(350, 500);
+        //the edit window needs to scroll, so the config is a little different, but essentially we just need to add
+        //a scroll pane
+        undoEditWindow = new JFrame("Undo Edit");
+        undoEditWindow.setLocationRelativeTo(frame);
+        undoEditWindow.setVisible(false);
+
+        undoEditWindowPanel = new JPanel();
+        undoEditWindowPanel.setVisible(false);
+        undoEditWindowPanel.setLayout(new GridLayout(0,3,5,5));
+        undoEditWindowScrollPane = new JScrollPane(undoEditWindowPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        undoEditWindowScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        undoEditWindowScrollPane.setVisible(false);
+        undoEditWindow.setSize(400, 500);
+        undoEditWindow.add(undoEditWindowScrollPane);
+        //undoEditWindow.add(undoEditWindowPanel);
+        undoEditWindow.setResizable(false);
+
         run();
     }
 
@@ -184,6 +205,11 @@ public final class TextEditor extends JFrame implements ActionListener {
         undoGroupMenu.setActionCommand("Undo Group");
         undoMenu.add(undoGroupMenu);
 
+        JMenuItem undoEditMenu = new JMenuItem("Undo Edit");
+        undoEditMenu.addActionListener(this);
+        undoEditMenu.setActionCommand("Edit Window");
+        undoMenu.add(undoEditMenu);
+
 
         // Set attributes of the app window
         area = new JTextArea();
@@ -202,9 +228,9 @@ public final class TextEditor extends JFrame implements ActionListener {
                     public void undoableEditHappened(UndoableEditEvent e){
                         //um.addEdit(e.getEdit());
                         Edits new_edit = new Edits(e.getEdit(), System.currentTimeMillis());
-                        edit.addEdit(new_edit);
+                        smartUndoManager.addEdit(new_edit);
                         //We clear the redo stack after every edit, since we don't want to redo over existing text
-                        edit.redoStack.clear();
+                        smartUndoManager.redoStack.clear();
                     }
                 });
 
@@ -246,7 +272,7 @@ public final class TextEditor extends JFrame implements ActionListener {
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
-                    edit.reset();
+                    smartUndoManager.reset();
                 }
             }
             // SAVE or Ctrl-S
@@ -270,19 +296,19 @@ public final class TextEditor extends JFrame implements ActionListener {
             //NEW button or Ctrl-N
         } else if (ae.equals("New")) {
             area.setText("");
-            edit.reset();
+            smartUndoManager.reset();
 
             //Quit button or CTRL-Q
         } else if (ae.equals("Quit")) { System.exit(0); }
 
         //Undo button or CTRL-Z
         else if(ae.equals("Undo")){
-            edit.undo();
+            smartUndoManager.undo();
         }
 
         //Redo button or CTRL-Y
         else if(ae.equals("Redo")){
-            edit.redo();
+            smartUndoManager.redo();
         }
 
         //The following options are to set font sizes
@@ -309,22 +335,39 @@ public final class TextEditor extends JFrame implements ActionListener {
         //So we call the undoGroup Function from SmartUndoManager
         else if(isNumeric(ae)){
             //System.out.println(edit.undoStack.toString());
-            edit.undoGroup(ae);
+            smartUndoManager.undoGroup(ae);
         }
         //This option means that the user wants to delete the undo group.
         //We take the last part of the string that contains the group number
         else if(ae.startsWith("Delete")){
             String group = ae.substring(6);
-            edit.deleteUndoGroup(group);
+            smartUndoManager.deleteUndoGroup(group);
 
         }
         //Since the window elements are already created, then we can only set them to be visible
         else if(ae.equals("Undo Group")){
-            undoWindow.setVisible(true);
-            content_panel.setVisible(true);
-            name_panel.setVisible(true);
-            undo_panel.setVisible(true);
-            delete_panel.setVisible(true);
+            undoGroupWindow.setVisible(true);
+            group_content_panel.setVisible(true);
+            group_name_panel.setVisible(true);
+            group_undo_panel.setVisible(true);
+            group_delete_panel.setVisible(true);
+        }
+        //Once again, the window elements are already created so we set them to be visible
+        else if(ae.equals("Edit Window")){
+            undoEditWindow.setVisible(true);
+            undoEditWindowPanel.setVisible(true);
+            undoEditWindowScrollPane.setVisible(true);
+        }
+        //The format of this command is EditDelete<Time> so we pull the time from the string and
+        //send it to smartUndoManager
+        else if(ae.startsWith("EditDelete")){
+            String time_of_edit = ae.substring(10);
+            smartUndoManager.deleteEdit(time_of_edit);
+        }
+        //The format here is Edit<Time>, so it extracts the time and sends it to smartUndoManager.
+        else if(ae.startsWith("Edit")){
+            String time_of_edit = ae.substring(4);
+            smartUndoManager.undoEdit(time_of_edit);
         }
     }
 
@@ -404,16 +447,16 @@ public final class TextEditor extends JFrame implements ActionListener {
      */
     public void addGroupElements(Edits edit, long group){
 
-        JButton label = new JButton(edit.getEdit().getPresentationName() + group);
+        JButton label = new JButton(edit.getEdit().getPresentationName());
         JButton undo_button = new JButton("Undo Group");
         JButton delete_button = new JButton("Delete Group");
         label.setSize(100,20);
         label.setEnabled(false);
         undo_button.setSize(100,20);
         delete_button.setSize(100, 20);
-        name_panel.add(label);
-        undo_panel.add(undo_button);
-        delete_panel.add(delete_button);
+        group_name_panel.add(label);
+        group_undo_panel.add(undo_button);
+        group_delete_panel.add(delete_button);
         undo_button.addActionListener(getActionListener());
         delete_button.addActionListener(getActionListener());
         undo_button.setActionCommand(Long.toString(group));
@@ -428,21 +471,21 @@ public final class TextEditor extends JFrame implements ActionListener {
      * Finally, we set the panel to be visible once again
      */
     public void removeAllGroupElements(){
-        name_panel.setVisible(false);
-        name_panel.removeAll();
-        name_panel.invalidate();
-        name_panel.revalidate();
-        name_panel.setVisible(true);
-        undo_panel.setVisible(false);
-        undo_panel.removeAll();
-        undo_panel.invalidate();
-        undo_panel.revalidate();
-        undo_panel.setVisible(true);
-        delete_panel.setVisible(false);
-        delete_panel.removeAll();
-        delete_panel.invalidate();
-        delete_panel.revalidate();
-        delete_panel.setVisible(true);
+        group_name_panel.setVisible(false);
+        group_name_panel.removeAll();
+        group_name_panel.invalidate();
+        group_name_panel.revalidate();
+        group_name_panel.setVisible(true);
+        group_undo_panel.setVisible(false);
+        group_undo_panel.removeAll();
+        group_undo_panel.invalidate();
+        group_undo_panel.revalidate();
+        group_undo_panel.setVisible(true);
+        group_delete_panel.setVisible(false);
+        group_delete_panel.removeAll();
+        group_delete_panel.invalidate();
+        group_delete_panel.revalidate();
+        group_delete_panel.setVisible(true);
     }
 
 
@@ -450,14 +493,48 @@ public final class TextEditor extends JFrame implements ActionListener {
      * Remove the first element in the undoWindow, clearing the oldest edit in this window.
      */
     public void removeFirstGroupElement(){
-        name_panel.remove(0);
-        name_panel.invalidate();
-        name_panel.revalidate();
-        undo_panel.remove(0);
-        undo_panel.invalidate();
-        undo_panel.revalidate();
-        delete_panel.remove(0);
-        delete_panel.invalidate();
-        delete_panel.revalidate();
+        group_name_panel.remove(0);
+        group_name_panel.invalidate();
+        group_name_panel.revalidate();
+        group_undo_panel.remove(0);
+        group_undo_panel.invalidate();
+        group_undo_panel.revalidate();
+        group_delete_panel.remove(0);
+        group_delete_panel.invalidate();
+        group_delete_panel.revalidate();
+    }
+
+    /**
+     * Adds a row to the edit window comprising of a new edit.
+     *
+     * @param edit Edit to be added to the window
+     * @param time Time of the edit, used to tell them apart
+     */
+    public void addEditElements(Edits edit, long time){
+        JButton label = new JButton(edit.getEdit().getPresentationName());
+        JButton undo_button = new JButton("Undo Edit");
+        JButton delete_button = new JButton("Delete Edit");
+        label.setSize(100,20);
+        label.setEnabled(false);
+        undo_button.setSize(100,20);
+        delete_button.setSize(100, 20);
+        undoEditWindowPanel.add(label);
+        undoEditWindowPanel.add(undo_button);
+        undoEditWindowPanel.add(delete_button);
+        undo_button.addActionListener(getActionListener());
+        delete_button.addActionListener(getActionListener());
+        undo_button.setActionCommand("Edit" + Long.toString(time));
+        delete_button.setActionCommand("EditDelete" + Long.toString(time));
+    }
+
+    /**
+     * Clears the edit window.s
+     */
+    public void removeAllEditElements(){
+        undoEditWindowPanel.setVisible(false);
+        undoEditWindowPanel.removeAll();
+        undoEditWindowPanel.invalidate();
+        undoEditWindowPanel.revalidate();
+        undoEditWindowPanel.setVisible(true);
     }
 }
