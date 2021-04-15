@@ -20,8 +20,9 @@ import java.util.logging.Logger;
  */
 public final class TextEditor extends JFrame implements ActionListener {
 
-    private static JTextArea area;
-    private static JFrame frame;
+    // changed from private static to protected for the test case
+    protected JTextArea area;
+    protected JFrame frame;
     private static JScrollPane scrollPane;
     private static int returnValue = 0;
     protected JMenu menu_groups;
@@ -38,7 +39,7 @@ public final class TextEditor extends JFrame implements ActionListener {
     protected JScrollPane undoEditWindowScrollPane;
 
     //List of non supported file extensions that will raise an error if encoutered
-    private final static ArrayList<String> non_supported_file_extensions = new ArrayList<>(
+    protected final ArrayList<String> non_supported_file_extensions = new ArrayList<>(
             Arrays.asList(".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", ".png", ".gif", ".webp",
                     ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", "k25", ".bmp", ".dib", ".heif",
                     ".heic", ".ind", ".indd", ".indt", ".jp2", ".j2k", ".jpf", ".jpx", ".jpm", ".mj2", ".svg",
