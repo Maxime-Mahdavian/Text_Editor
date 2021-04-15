@@ -324,16 +324,18 @@ class SmartUndoManagerTest {
     }
     
     
-    @Test
+     @Test
     void updateGroupWindow() {
         smartUndoManager.addEdit(edits1);
         smartUndoManager.addEdit(edits2);
         smartUndoManager.updateGroupWindow();
 
+
         Assertions.assertAll(
                 "heading",
-                ()->assertEquals(1, edits1.getGroup()),
-                ()->assertEquals(2, edits2.getGroup())
+                ()->assertEquals(2, smartUndoManager.undoStack.size()),
+                ()->assertEquals(0, smartUndoManager.redoStack.size())
+
         );
 
     }
