@@ -316,6 +316,10 @@ public class SmartUndoManager {
         }
     }
 
+    /**
+     * Updates the editWindow. It goes through the undo stack and calls addEditElements from TextEditor
+     * to add it to the window.
+     */
     public void updateEditWindow(){
         textEditor.removeAllEditElements();
         //active_group_count = 0;
