@@ -1,7 +1,7 @@
-package smartundo;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import smartundo.Edits;
+import smartundo.SizedStack;
 
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
