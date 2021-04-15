@@ -399,37 +399,6 @@ public final class TextEditor extends JFrame implements ActionListener {
         }
     }
 
-
-    public void addGroupMenu(Edits edit, long group_counter){
-        JMenu newedit = new JMenu(edit.getEdit().getPresentationName());
-        JMenuItem newedit_undo = new JMenuItem("Undo");
-        JMenuItem newedit_delete = new JMenuItem("Delete");
-        newedit.add(newedit_undo);
-        newedit.add(newedit_delete);
-        menu_groups.add(newedit);
-        newedit_undo.addActionListener(getActionListener());
-        newedit_undo.setActionCommand(Long.toString(group_counter));
-        newedit_delete.addActionListener(getActionListener());
-        newedit_delete.setActionCommand("Delete" + Long.toString(group_counter));
-        undoMenuItems.add(newedit);
-    }
-
-
-    public void removeFirstGroupMenuItem(){
-        //Turns out you can just do that to remove the first element in the list of menus
-        try {
-            menu_groups.remove(0);
-        }
-        catch (IllegalArgumentException e){
-
-        }
-    }
-
-    public void removeAllGroupMenuItem(){
-        menu_groups.removeAll();
-    }
-
-
     /**
      * @param size Font size
      *

@@ -160,7 +160,6 @@ public class SmartUndoManager {
 
         //Uses java stream feature to remove the edits. Much more compact and easier to read
         undoStack.removeIf(edit -> edit.getGroup() == group_number);
-        //updateGroupList();
         updateGroupWindow();
         updateEditWindow();
     }
@@ -278,22 +277,6 @@ public class SmartUndoManager {
         previousClass = "";
         time_of_previous_group = 0;
         firstEdit = true;
-    }
-
-    //Update the group list, easier than making updating it while we're undoing
-    public void updateGroupList(){
-
-        textEditor.removeAllGroupMenuItem();
-        active_group_count = 0;
-        long previous_group = 0;
-
-        for (Edits edit : undoStack) {
-            if (edit.getGroup() != previous_group && active_group_count <= MAX_ACTIVE_GROUPS) {
-                previous_group = edit.getGroup();
-                active_group_count++;
-                textEditor.addGroupMenu(edit, edit.getGroup());
-            }
-        }
     }
 
     /**
