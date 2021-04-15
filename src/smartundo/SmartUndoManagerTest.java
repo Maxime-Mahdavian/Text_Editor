@@ -343,7 +343,7 @@ class SmartUndoManagerTest {
     void updateEditWindow() {
         smartUndoManager.addEdit(edits1);
         smartUndoManager.addEdit(edits2);
-        smartUndoManager.updateGroupWindow();
+        smartUndoManager.updateEditWindow();
 
 
         Assertions.assertAll(
