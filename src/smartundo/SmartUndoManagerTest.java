@@ -337,6 +337,23 @@ class SmartUndoManagerTest {
         );
 
     }
+    
+    
+    @Test
+    void updateEditWindow() {
+        smartUndoManager.addEdit(edits1);
+        smartUndoManager.addEdit(edits2);
+        smartUndoManager.updateGroupWindow();
+
+
+        Assertions.assertAll(
+                "heading",
+                ()->assertEquals(2, smartUndoManager.undoStack.size()),
+                ()->assertEquals(0, smartUndoManager.redoStack.size())
+
+        );
+
+    }
 
 
 }
