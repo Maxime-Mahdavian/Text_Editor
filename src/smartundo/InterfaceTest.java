@@ -1,3 +1,5 @@
+package smartundo;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.event.ActionEvent;
@@ -11,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
 import org.junit.jupiter.api.Test;
+import smartundo.TextEditor;
 
 class InterfaceTest {
 	

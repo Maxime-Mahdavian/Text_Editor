@@ -1,3 +1,5 @@
+package smartundo;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import smartundo.Edits;
@@ -192,10 +194,10 @@ class SizedStackTest {
         //Edit1.getTime = 1, Edit2.getTime = 2, Edit3.getTime = 3, SizedStack.size = 2
         Assertions.assertAll(
                 "heading",
-                ()->assertEquals(edit1, sizedStack.push(edit1)),
-                ()->assertEquals(edit2, sizedStack.push((edit2))),
-                ()->assertEquals(edit3, sizedStack.push(edit3)),
-                ()->assertEquals(edit2,sizedStack.firstElement())
+                ()-> Assertions.assertEquals(edit1, sizedStack.push(edit1)),
+                ()-> Assertions.assertEquals(edit2, sizedStack.push((edit2))),
+                ()-> Assertions.assertEquals(edit3, sizedStack.push(edit3)),
+                ()-> Assertions.assertEquals(edit2,sizedStack.firstElement())
         );
     }
 }

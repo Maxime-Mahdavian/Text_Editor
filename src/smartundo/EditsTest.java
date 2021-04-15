@@ -1,6 +1,7 @@
 package smartundo;
 
 import org.junit.jupiter.api.Assertions;
+import smartundo.Edits;
 
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
